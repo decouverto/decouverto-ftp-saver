@@ -1,0 +1,14 @@
+[Unit]
+Description=Decouverto FTP saver
+After=syslog.target network.target
+
+[Service]
+ExecStart=/root/.nvm/versions/node/v8.9.4/bin/node /node/decouverto-ftp-saver/decouverto-ftp-saver-cron.js
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=decouverto-ftp-saver
+
+[Install]
+WantedBy=multi-user.target
