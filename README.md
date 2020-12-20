@@ -12,3 +12,8 @@ RECEIVERS=receiver@example.com,receiver2@example.com
 FTP_SERVER_PATH=/Disque dur/decouverto/
 FTP_SERVER=mafreebox.freebox.fr
 ```
+
+If you don't want to use FTP yon can add:
+```
+ENABLE_FTP=false
+```
