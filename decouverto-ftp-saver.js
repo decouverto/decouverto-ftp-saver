@@ -18,8 +18,46 @@ if (process.env.ENABLE_FTP == 'false')   {
 }
 fs.mkdirpSync(path.join(process.cwd(), localFolder));
 
-console.log('Téléchargement de la liste'.yellow);
-request.get('https://decouverto.fr/walks/index.json', function (err, res, body) {
+console.log('Téléchargement de la liste des points de vente'.yellow);
+request.get('https://decouverto.fr/save/shops.json', function (err, res, body) {
+    if (err) return report(err, 'Impossible de télécharger la liste des points de vente.');
+    console.log('Liste téléchargée'.green);
+    if (process.env.ENABLE_FTP == 'false') {
+        let p = path.join(process.cwd(), localFolder, 'shops.json');
+        fs.writeFile(p, body, function(err, data) {
+            if (err) {
+                report(err, 'Erreur lors de l\'écriture de shops.json');
+            }
+            console.log('Sauvegarde de la liste réussie.'.green);
+        });
+    } else {
+        ftp.put(Buffer.from(body, 'utf8'), process.env.FTP_SERVER_PATH + '/shops.json', err => {
+            if (err) return report(err, 'Impossible de sauvegarder la liste des points de vente.');
+            console.log('Liste des points de vente sauvegardée'.green);
+        });
+    }
+});
+console.log('Téléchargement des méta-données'.yellow);
+request.get('https://decouverto.fr/save/metas.json', function (err, res, body) {
+    if (err) return report(err, 'Impossible de télécharger les méta-données.');
+    console.log('Méta-données téléchargées'.green);
+    if (process.env.ENABLE_FTP == 'false') {
+        let p = path.join(process.cwd(), localFolder, 'metas.json');
+        fs.writeFile(p, body, function(err, data) {
+            if (err) {
+                report(err, 'Erreur lors de l\'écriture de metas.json');
+            }
+            console.log('Sauvegarde des méta-données réussies.'.green);
+        });
+    } else {
+        ftp.put(Buffer.from(body, 'utf8'), process.env.FTP_SERVER_PATH + '/metas.json', err => {
+            if (err) return report(err, 'Impossible de sauvegarder les méta-données.');
+            console.log('Les méta-données ont été sauvegardées'.green);
+        });
+    }
+});
+console.log('Téléchargement de la liste des balades'.yellow);
+request.get('https://decouverto.fr/save/index.json', function (err, res, body) {
     if (err) return report(err, 'Impossible de télécharger la liste des balades.');
     console.log('Liste téléchargée'.green);
     if (process.env.ENABLE_FTP == 'false') {
@@ -33,7 +71,7 @@ request.get('https://decouverto.fr/walks/index.json', function (err, res, body) 
     } else {
         ftp.put(Buffer.from(body, 'utf8'), process.env.FTP_SERVER_PATH + '/index.json', err => {
             if (err) return report(err, 'Impossible de sauvegarder la liste des balades sur le serveur.');
-            console.log('Liste sauvegardée'.green);
+            console.log('Liste des balades sauvegardée'.green);
         });
     }
     const files = JSON.parse(body);
@@ -43,7 +81,7 @@ request.get('https://decouverto.fr/walks/index.json', function (err, res, body) 
     const tasks = files.map(element => {
         let p = path.join(process.cwd(), localFolder, element.id + '.zip');
         return function (callback) {
-            request.get('https://decouverto.fr/walks/' + element.id + '.zip')
+            request.get('https://decouverto.fr/save/' + element.id + '.zip')
             .on('error', function (err) {
                 console.log(colors.red('Erreur lors du téléchargement de ' + element.id + '.zip'));
                 return callback(err);
